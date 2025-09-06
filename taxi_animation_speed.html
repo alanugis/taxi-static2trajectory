@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0" />
+            <style>
+                #map_34cb6bd7535dc058ec23672a2d0e738b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+                .loading {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 1000;
+                    background: rgba(255, 255, 255, 0.9);
+                    padding: 20px;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    text-align: center;
+                    min-width: 200px;
+                }
+                
+                .clear-cache-btn {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 1000;
+                    padding: 10px 20px;
+                    background: #fff;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                
+                .active-taxis-info {
+                    transition: opacity 0.3s ease-in-out;
+                    font-family: Arial, sans-serif;
+                }
+                
+                .active-taxis-info h5 {
+                    margin: 0 0 10px 0;
+                    color: #333;
+                }
+                
+                .active-taxis-info p {
+                    margin: 5px 0;
+                    font-size: 14px;
+                }
+                
+                #active-count {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #007bff;
+                    margin: 10px 0;
+                }
+
+                /* Timeline bar styles */
+                .timeline-bar {
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    bottom: 30px;
+                    width: 520px;
+                    z-index: 1100;
+                    background: rgba(255,255,255,0.95);
+                    padding: 7px 12px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                /* Control buttons */
+                .control-btn {
+                    background: none;
+                    border: none;
+                    padding: 0 8px;
+                    font-size: 20px;
+                    color: #007bff;
+                    cursor: pointer;
+                    display: none;
+                }
+
+                .control-btn:hover {
+                    color: #0056b3;
+                }
+
+                /* Timeline slider */
+                .timeline-slider {
+                    flex: 1 1 0;
+                    width: 0;
+                    min-width: 120px;
+                    max-width: 260px;
+                    vertical-align: middle;
+                }
+
+                .timeline-time {
+                    font-family: monospace;
+                    font-size: 15px;
+                    width: 70px;
+                    text-align: center;
+                }
+
+                /* Time jump popup */
+                .time-jump-container {
+                    position: relative;
+                }
+
+                .icon-btn {
+                    background: none;
+                    border: none;
+                    padding: 4px;
+                    font-size: 15px;
+                    color: #888;
+                    cursor: pointer;
+                    border-radius: 4px;
+                }
+
+                .icon-btn:hover {
+                    background: rgba(0, 0, 0, 0.05);
+                    color: #007bff;
+                }
+
+                .time-jump-popup {
+                    display: none;
+                    position: absolute;
+                    top: -50px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: white;
+                    padding: 8px;
+                    border-radius: 6px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    z-index: 1200;
+                    white-space: nowrap;
+                }
+
+                .time-jump-popup.show {
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                }
+
+                .time-jump-popup::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -6px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    border-left: 6px solid transparent;
+                    border-right: 6px solid transparent;
+                    border-top: 6px solid white;
+                }
+
+                /* Legend styles */
+                .speed-legend {
+                    position: absolute;
+                    bottom: 100px;
+                    right: 10px;
+                    background: rgba(255, 255, 255, 0.95);
+                    padding: 10px;
+                    border-radius: 4px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                }
+
+                .legend-title {
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+
+                .legend-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin: 4px 0;
+                    font-size: 13px;
+                }
+
+                .legend-color {
+                    width: 20px;
+                    height: 3px;
+                    border-radius: 1px;
+                }
+
+                .speed-low {
+                    background-color: #ff4444;
+                }
+
+                .speed-medium {
+                    background-color: #ffbb33;
+                }
+
+                .speed-high {
+                    background-color: #00C851;
+                }
+
+                /* Timeline controls styles */
+                #time-input {
+                    font-family: monospace;
+                    font-size: 15px;
+                    width: 100px;
+                    text-align: center;
+                    padding: 2px 4px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                }
+
+                #jump-btn {
+                    background: none;
+                    border: none;
+                    padding: 0 8px;
+                    font-size: 15px;
+                    color: #007bff;
+                }
+
+                .timeline-controls {
+                    display: flex;
+                    align-items: center;
+                    gap: 3px;
+                    margin-left: 8px;
+                }
+
+                .timeline-icon {
+                    font-size: 15px;
+                    color: #888;
+                }
+
+                #fps-input {
+                    width: 42px;
+                    font-size: 13px;
+                    padding: 2px 4px;
+                    margin-left: 2px;
+                }
+
+                .fps-label {
+                    font-size: 13px;
+                    color: #888;
+                }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.css"/>
+</head>
+<body>
+    
+        <div id="loading" class="loading">
+            <h4>Loading taxi data...</h4>
+            <div id="loading-status">Initializing...</div>
+            <div id="progress-stats" style="margin: 15px 0;">
+                Processed: <span id="processed-count">0</span> / <span id="total-count">0</span> trips<br>
+                Time elapsed: <span id="time-elapsed">0:00</span><br>
+                Est. time remaining: <span id="time-remaining">calculating...</span>
+            </div>
+            <div class="progress" style="margin: 15px 0; height: 20px; width: 100%; background-color: #f5f5f5; border-radius: 4px; overflow: hidden;">
+                <div class="progress-bar" role="progressbar" 
+                     style="width: 0%; height: 100%; background-color: #007bff; transition: width 0.3s ease;"
+                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+            <p><small>Note: Routes will follow actual OSM road paths using OSRM routing</small></p>
+        </div>
+    
+    <div class="active-taxis-info" id="active-taxis-info" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h5>Active Taxis</h5>
+        <p id="active-count">0</p>
+        <p><small>Current time: <span id="current-time">--</span></small></p>
+    </div>
+
+    <div class="speed-legend">
+        <div class="legend-title">Average Speed</div>
+        <div class="legend-item">
+            <div class="legend-color speed-high"></div>
+            <span>> 50 km/h</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color speed-medium"></div>
+            <span>30-50 km/h</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color speed-low"></div>
+            <span>< 30 km/h</span>
+        </div>
+    </div>
+    
+                        <div class="folium-map" id="map_34cb6bd7535dc058ec23672a2d0e738b" ></div>
+                        <div id="timeline-bar" class="timeline-bar">
+                                <button id="play-btn" class="control-btn" title="Play" aria-label="Play animation"><i class="fas fa-play"></i></button>
+                                <button id="pause-btn" class="control-btn" title="Pause" aria-label="Pause animation"><i class="fas fa-pause"></i></button>
+                                <button id="replay-btn" class="control-btn" title="Replay" aria-label="Replay animation"><i class="fas fa-rotate-left"></i></button>    
+                                <input type="range" id="timeline-slider" class="timeline-slider" min="0" max="100" value="0" title="Timeline slider" aria-label="Timeline position">
+                                <span id="timeline-time" class="timeline-time">--:--</span>
+                                <div class="time-jump-container">
+                                    <button id="show-time-input-btn" class="icon-btn" title="Jump to specific time" aria-label="Show time input">
+                                        <i class="fas fa-clock"></i>
+                                    </button>
+                                    <div class="time-jump-popup">
+                                        <input type="time" id="time-input" class="time-input" title="Jump to specific time" aria-label="Enter time to jump to">
+                                        <button id="jump-btn" class="jump-btn" title="Jump to Time" aria-label="Jump to entered time">
+                                            <i class="fas fa-forward"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="timeline-controls">
+                                    <i class="fas fa-tachometer-alt timeline-icon"></i>
+                                    <input type="number" id="fps-input" class="fps-input" min="1" max="60" value="10" title="Animation speed (frames per second)" aria-label="Frames per second">
+                                    <span class="fps-label">fps</span>
+                                </div>
+                        </div>
+        
+</body>
+<script>    
+    // Global variables
+    var map_34cb6bd7535dc058ec23672a2d0e738b;
+    var timeDimensionControl;
+    var timestamped_geo_json_51dc49ae13689c5b99e20b9f5604fbd1;
+    
+    // Function to parse date string to ISO format
+    function parseDate(dateStr) {
+        if (!dateStr) return moment().format('YYYY-MM-DDTHH:mm:ss');
+        let date = (dateStr.includes('AM') || dateStr.includes('PM')) ? moment(dateStr, 'MM/DD/YYYY hh:mm:ss A') : moment(dateStr);
+        return date.isValid() ? date.format('YYYY-MM-DDTHH:mm:ss') : moment().format('YYYY-MM-DDTHH:mm:ss');
+    }
+    
+    // Function to get route from OSRM
+    async function getOSRMRoute(startLng, startLat, endLng, endLat) {
+        try {
+            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            const data = await response.json();
+            if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                return data.routes[0].geometry.coordinates;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+    
+    // Function to generate route points between pickup and dropoff using OSRM
+    async function generateRoutePoints(pickupLat, pickupLng, dropoffLat, dropoffLng, startTime, endTime, numPoints = 50) {
+        const points = [];
+        const times = [];
+        
+        // If no dropoff coordinates, create a stationary point
+        if (!dropoffLat || !dropoffLng || (pickupLat === dropoffLat && pickupLng === dropoffLng)) {
+            for (let i = 0; i < numPoints; i++) {
+                points.push([pickupLng, pickupLat]);
+                const timeOffset = (i / (numPoints - 1)) * 15 * 60; // 15 minutes in seconds
+                const pointTime = moment(startTime).add(timeOffset, 'seconds');
+                times.push(pointTime.format('YYYY-MM-DDTHH:mm:ss'));
+            }
+        } else {
+            // Get actual route from OSRM
+            const routeCoordinates = await getOSRMRoute(pickupLng, pickupLat, dropoffLng, dropoffLat);
+            
+            if (routeCoordinates && routeCoordinates.length > 0) {
+                // Use actual route coordinates
+                const totalDuration = moment(endTime).diff(moment(startTime), 'seconds');
+                const timePerPoint = totalDuration / (routeCoordinates.length - 1);
+                
+                routeCoordinates.forEach((coord, index) => {
+                    points.push(coord); // OSRM returns [lng, lat] format
+                    
+                    const timeOffset = index * timePerPoint;
+                    const pointTime = moment(startTime).add(timeOffset, 'seconds');
+                    times.push(pointTime.format('YYYY-MM-DDTHH:mm:ss'));
+                });
+            } else {
+                // Fallback to interpolated straight line if OSRM fails
+                for (let i = 0; i < numPoints; i++) {
+                    const ratio = i / (numPoints - 1);
+                    const lat = pickupLat + (dropoffLat - pickupLat) * ratio;
+                    const lng = pickupLng + (dropoffLng - pickupLng) * ratio;
+                    points.push([lng, lat]);
+                    
+                    const timeOffset = ratio * 15 * 60; // 15 minutes in seconds
+                    const pointTime = moment(startTime).add(timeOffset, 'seconds');
+                    times.push(pointTime.format('YYYY-MM-DDTHH:mm:ss'));
+                }
+            }
+        }
+        
+        return { points, times };
+    }
+    
+
+    
+    // Function to get route from OSRM
+    async function getOSRMRoute(startLng, startLat, endLng, endLat) {
+        try {
+            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            const data = await response.json();
+            if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                return data.routes[0].geometry.coordinates;
+            }
+            return null;
+        } catch (error) {
+            console.warn('OSRM route fetch failed:', error);
+            return null;
+        }
+    }
+
+    // Function to generate route points between pickup and dropoff
+    async function generateRoutePoints(pickupLat, pickupLng, dropoffLat, dropoffLng, startTime, endTime) {
+        // If coordinates are the same or dropoff is missing, create a stationary point
+        if (!dropoffLat || !dropoffLng || 
+            (pickupLat === dropoffLat && pickupLng === dropoffLng)) {
+            return {
+                points: [[pickupLng, pickupLat], [pickupLng, pickupLat]],
+                times: [startTime, endTime]
+            };
+        }
+
+        // Get actual route from OSRM
+        const routeCoordinates = await getOSRMRoute(pickupLng, pickupLat, dropoffLng, dropoffLat);
+        
+        if (routeCoordinates && routeCoordinates.length > 0) {
+            // Generate evenly spaced timestamps for the route points
+            const times = [];
+            const startMoment = moment(startTime);
+            const endMoment = moment(endTime);
+            const duration = endMoment.diff(startMoment, 'seconds');
+            const timeStep = duration / (routeCoordinates.length - 1);
+
+            for (let i = 0; i < routeCoordinates.length; i++) {
+                const timeOffset = i * timeStep;
+                const pointTime = startMoment.clone().add(timeOffset, 'seconds');
+                times.push(pointTime.format('YYYY-MM-DDTHH:mm:ss'));
+            }
+
+            return { points: routeCoordinates, times };
+        }
+
+        // Fallback to direct line if OSRM fails
+        console.warn('Falling back to direct line for route');
+        return {
+            points: [[pickupLng, pickupLat], [dropoffLng, dropoffLat]],
+            times: [startTime, endTime]
+        };
+    }
+
+    // Progress tracking variables are no longer needed since we're using precomputed routes
+
+    // Function to load JSON and create map
+    async function loadJsonAndCreateMap() {
+        try {
+            document.getElementById('loading-status').textContent = 'Loading precomputed routes...';
+            //-----------------------------------------------------------------------------------
+            const response = await fetch('SF_routes_20230701.json');
+            //-----------------------------------------------------------------------------------
+            const geoJsonData = await response.json();
+            
+            console.log('Precomputed routes loaded successfully');
+            console.log('Number of routes:', geoJsonData.features.length);
+            
+            document.getElementById('loading').style.display = 'none';
+            createMap(geoJsonData);
+        } catch (error) {
+            console.error('Error loading precomputed routes:', error);
+            document.getElementById('loading-status').textContent = 'Error loading data: ' + error.message;
+        }
+    }
+    
+    // Function to create the map and animate taxis manually
+    function createMap(geoJsonData) {
+        if (!geoJsonData || !geoJsonData.features) {
+            console.error('Invalid GeoJSON data:', geoJsonData);
+            document.getElementById('loading-status').textContent = 'Error: Invalid data format';
+            return;
+        }
+
+        // Calculate center from the data points
+        let centerLat = 0, centerLng = 0, count = 0;
+        geoJsonData.features.forEach(feature => {
+            if (feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length > 0) {
+                // Take the first point of each route
+                centerLng += feature.geometry.coordinates[0][0];
+                centerLat += feature.geometry.coordinates[0][1];
+                count++;
+            }
+        });
+        centerLat = count > 0 ? centerLat / count : 0;
+        centerLng = count > 0 ? centerLng / count : 0;
+
+        map_34cb6bd7535dc058ec23672a2d0e738b = L.map(
+            "map_34cb6bd7535dc058ec23672a2d0e738b",
+            {
+                center: [centerLat, centerLng],
+                crs: L.CRS.EPSG3857,
+                maxBounds: null,
+                zoom: 11,
+                zoomControl: true,
+                preferCanvas: false,
+            }
+        );
+
+        var tile_layer = L.tileLayer(
+            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                minZoom: 0,
+                maxZoom: 19,
+                maxNativeZoom: 19,
+                noWrap: false,
+                attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+                subdomains: "abc",
+                detectRetina: false,
+                tms: false,
+                opacity: 1,
+            }
+        );
+        tile_layer.addTo(map_34cb6bd7535dc058ec23672a2d0e738b);
+
+        // Parse features into trips
+        var trips = [];
+        geoJsonData.features.forEach(function(feature) {
+            if (feature.properties && feature.properties.times && feature.geometry && feature.geometry.coordinates) {
+                var times = feature.properties.times;
+                var coords = feature.geometry.coordinates;
+                    var tripId = feature.properties.tripId;
+                    var averageSpeed = feature.properties.average_speed * 3.6; // Convert m/s to km/h
+                    var routeColor = getSpeedColor(averageSpeed);
+                    var speedText = averageSpeed.toFixed(1);
+                    
+                trips.push({
+                    tripId: tripId,
+                    times: times,
+                    coords: coords,
+                    polyline: null,
+                    marker: null,
+                    color: routeColor,
+                    popup: feature.properties.popup || `Trip ${tripId}<br>Average Speed: ${speedText} km/h`
+                });
+            }
+        });
+
+        // Function to determine route color based on speed
+        function getSpeedColor(speedKmh) {
+            if (speedKmh > 50) return '#00C851';  // Green for high speed
+            if (speedKmh >= 30) return '#ffbb33'; // Yellow for medium speed
+            return '#ff4444';                      // Red for low speed
+        }        // Animation state
+        var animation = {
+            currentTime: null,
+            startTime: null,
+            endTime: null,
+            timer: null,
+            step: 15, // seconds per frame
+            speed: 1, // multiplier
+            playing: true,
+        };
+
+    // Find global start and end time
+    var allTimes = trips.flatMap(t => [t.times[0], t.times[t.times.length-1]]).map(t => moment(t));
+    animation.startTime = moment.min(allTimes);
+    animation.endTime = moment.max(allTimes);
+    animation.currentTime = animation.startTime.clone();
+
+    // Timeline slider and controls setup
+    var slider = document.getElementById('timeline-slider');
+    var playBtn = document.getElementById('play-btn');
+    var pauseBtn = document.getElementById('pause-btn');
+    var replayBtn = document.getElementById('replay-btn');
+    var timeLabel = document.getElementById('timeline-time');
+    var totalSeconds = animation.endTime.diff(animation.startTime, 'seconds');
+    slider.min = 0;
+    slider.max = totalSeconds;
+    slider.value = 0;
+
+    // FPS input setup
+    var fpsInput = document.getElementById('fps-input');
+    var fps = Number(fpsInput.value);
+    var intervalMs = 1000 / fps;
+
+        // UI update
+        function updateActiveTaxisInfo(count) {
+            var activeCountElement = document.getElementById('active-count');
+            var currentTimeElement = document.getElementById('current-time');
+            var activeTaxisInfo = document.getElementById('active-taxis-info');
+            if (activeCountElement) activeCountElement.textContent = count;
+            if (currentTimeElement) currentTimeElement.textContent = animation.currentTime.format('YYYY-MM-DD HH:mm:ss');
+            if (activeTaxisInfo) activeTaxisInfo.style.display = 'block';
+            // Update timeline time label
+            if (timeLabel) timeLabel.textContent = animation.currentTime.format('HH:mm:ss');
+        }
+
+        // Animation loop
+        function animate() {
+            // Remove all previous markers and polylines
+            trips.forEach(function(trip) {
+                if (trip.marker && map_34cb6bd7535dc058ec23672a2d0e738b.hasLayer(trip.marker)) {
+                    map_34cb6bd7535dc058ec23672a2d0e738b.removeLayer(trip.marker);
+                }
+                if (trip.polyline && map_34cb6bd7535dc058ec23672a2d0e738b.hasLayer(trip.polyline)) {
+                    map_34cb6bd7535dc058ec23672a2d0e738b.removeLayer(trip.polyline);
+                }
+            });
+
+            var activeCount = 0;
+            trips.forEach(function(trip) {
+                var start = moment(trip.times[0]);
+                var end = moment(trip.times[trip.times.length-1]);
+                if (animation.currentTime.isBetween(start, end, null, '[]')) {
+                    // Find the closest index in times
+                    var idx = trip.times.findIndex(t => animation.currentTime.isSameOrBefore(moment(t)));
+                    if (idx === -1) idx = trip.times.length - 1;
+                    // Draw partial route up to current idx
+                    var routeCoords = trip.coords.slice(0, idx+1).map(c => [c[1], c[0]]); // [lat, lng]
+                    trip.polyline = L.polyline(routeCoords, {
+                        color: trip.color,
+                        weight: 3,
+                        opacity: 0.8,
+                        lineCap: 'round'
+                    }).addTo(map_34cb6bd7535dc058ec23672a2d0e738b);
+
+                    // Draw marker at current position
+                    var latlng = routeCoords[routeCoords.length-1];
+                    trip.marker = L.circleMarker(latlng, {
+                        radius: 5,
+                        color: trip.color,
+                        fillColor: 'white',
+                        fillOpacity: 0.7,
+                        weight: 2
+                    }).addTo(map_34cb6bd7535dc058ec23672a2d0e738b);
+                    trip.marker.bindPopup(trip.popup);
+                    activeCount++;
+                } else {
+                    trip.polyline = null;
+                    trip.decorator = null;
+                    trip.marker = null;
+                }
+            });
+            updateActiveTaxisInfo(activeCount);
+            // Update slider position
+            slider.value = animation.currentTime.diff(animation.startTime, 'seconds');
+        }
+
+        // Animation timer
+        var animationInterval = null;
+        function stepAnimation() {
+            if (!animation.playing) return;
+            animate();
+            animation.currentTime.add(animation.step * animation.speed, 'seconds');
+            if (animation.currentTime.isAfter(animation.endTime)) {
+                animation.currentTime = animation.endTime.clone();
+                animate();
+                animation.playing = false;
+                updatePlayPauseReplayButtons();
+                clearInterval(animationInterval);
+                animationInterval = null;
+            } else {
+                updatePlayPauseReplayButtons();
+            }
+        }
+
+        function startAnimationInterval() {
+            if (animationInterval) clearInterval(animationInterval);
+            animationInterval = setInterval(stepAnimation, intervalMs);
+        }
+
+        // FPS input event
+        fpsInput.addEventListener('change', function() {
+            fps = Math.max(1, Math.min(60, Number(fpsInput.value)));
+            intervalMs = 1000 / fps;
+            fpsInput.value = fps;
+            if (animation.playing) {
+                startAnimationInterval();
+            }
+        });
+
+        // Slider event
+        slider.addEventListener('input', function() {
+            animation.currentTime = animation.startTime.clone().add(Number(slider.value), 'seconds');
+            animate();
+        });
+
+        // Play button event
+        playBtn.addEventListener('click', function() {
+            if (!animation.playing) {
+                animation.playing = true;
+                updatePlayPauseReplayButtons();
+                startAnimationInterval();
+            }
+        });
+
+        // Pause button event
+        pauseBtn.addEventListener('click', function() {
+            if (animation.playing) {
+                animation.playing = false;
+                updatePlayPauseReplayButtons();
+                if (animationInterval) {
+                    clearInterval(animationInterval);
+                    animationInterval = null;
+                }
+            }
+        });
+
+        // Replay button event
+        replayBtn.addEventListener('click', function() {
+            animation.currentTime = animation.startTime.clone();
+            animate();
+            animation.playing = true;
+            updatePlayPauseReplayButtons();
+            startAnimationInterval();
+        });
+
+        // Show only the correct button
+        function updatePlayPauseReplayButtons() {
+            if (animation.currentTime.isSame(animation.endTime)) {
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'none';
+                replayBtn.style.display = 'inline-block';
+            } else if (animation.playing) {
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+                replayBtn.style.display = 'none';
+            } else {
+                playBtn.style.display = 'inline-block';
+                pauseBtn.style.display = 'none';
+                replayBtn.style.display = 'none';
+            }
+        }
+
+        // In your stepAnimation function, replace updatePlayPauseButtons() with updatePlayPauseReplayButtons()
+        function stepAnimation() {
+            if (!animation.playing) return;
+            animate();
+            animation.currentTime.add(animation.step * animation.speed, 'seconds');
+            if (animation.currentTime.isAfter(animation.endTime)) {
+                animation.currentTime = animation.endTime.clone();
+                animate();
+                animation.playing = false;
+                updatePlayPauseReplayButtons();
+                clearInterval(animationInterval);
+                animationInterval = null;
+            } else {
+                updatePlayPauseReplayButtons();
+            }
+        }
+
+    // Time input and jump functionality
+    var timeInput = document.getElementById('time-input');
+    var jumpBtn = document.getElementById('jump-btn');
+    var showTimeInputBtn = document.getElementById('show-time-input-btn');
+    var timeJumpPopup = document.querySelector('.time-jump-popup');
+    var timeLabel = document.getElementById('timeline-time');
+
+    // Set initial time input value
+    function updateTimeDisplay() {
+        const time = animation.currentTime.format('HH:mm:ss');
+        timeLabel.textContent = time;
+        if (timeInput) {
+            timeInput.value = animation.currentTime.format('HH:mm');
+        }
+    }
+
+    // Handle jump to time
+    function jumpToTime() {
+        const inputTime = timeInput.value;
+        if (!inputTime) return;
+
+        // Get the current date from animation time and combine with input time
+        const targetTime = animation.currentTime.clone()
+            .hours(parseInt(inputTime.split(':')[0]))
+            .minutes(parseInt(inputTime.split(':')[1]))
+            .seconds(0);
+
+        // Don't jump if time is outside animation range
+        if (targetTime.isBefore(animation.startTime) || targetTime.isAfter(animation.endTime)) {
+            alert('Selected time is outside the available time range.');
+            updateTimeDisplay();
+            return;
+        }
+
+        // Update animation time and animate
+        animation.currentTime = targetTime;
+        animate();
+        slider.value = animation.currentTime.diff(animation.startTime, 'seconds');
+        timeJumpPopup.classList.remove('show');
+    }
+
+    // Show/hide time input popup
+    showTimeInputBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        timeJumpPopup.classList.toggle('show');
+    });
+
+    // Close popup when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!timeJumpPopup.contains(e.target) && !showTimeInputBtn.contains(e.target)) {
+            timeJumpPopup.classList.remove('show');
+        }
+    });
+
+    // Event listeners for time input
+    timeInput.addEventListener('change', jumpToTime);
+    timeInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            jumpToTime();
+        }
+    });
+    jumpBtn.addEventListener('click', jumpToTime);
+
+    // Update time display when slider changes
+    slider.addEventListener('input', function() {
+        animation.currentTime = animation.startTime.clone().add(Number(slider.value), 'seconds');
+        updateTimeDisplay();
+        animate();
+    });
+
+    // Initial state
+    animation.playing = false;
+    updatePlayPauseReplayButtons();
+    updateTimeInput();
+    animate();
+    }
+    
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+        loadJsonAndCreateMap().catch(error => {
+            console.error('Error loading JSON file:', error);
+            document.getElementById('loading-status').textContent = 'Error loading data: ' + error.message;
+        });
+    });
+        
+</script>
+</html>
